@@ -18,6 +18,10 @@ from nanover.recording import PlaybackSimulation
 from nanover.utilities.cli import suppress_keyboard_interrupt_as_cancellation
 from nanover.websocket.discovery import DiscoveryClient
 from nanover.websocket.record import record_from_runner
+try:
+    from nanover.lammps import LAMMPSSimulation
+except Exception:
+    LAMMPSSimulation = None
 
 
 def handle_user_arguments(args=None) -> argparse.Namespace:
@@ -32,6 +36,16 @@ def handle_user_arguments(args=None) -> argparse.Namespace:
     """
     )
     parser = argparse.ArgumentParser(description=description)
+
+    parser.add_argument(
+        "--lammps",
+        dest="lammps_entries",
+        action="append",
+        nargs="+",
+        default=[],
+        metavar="PATH",
+        help="Simulation to run via LAMMPS (data file format)",
+    )
 
     parser.add_argument(
         "--omm",
@@ -145,6 +159,18 @@ def initialise_runner(arguments: argparse.Namespace):
         for path in get_all_paths(arguments.mdanalysis_entries):
             simulation = UniverseSimulation.from_path(path=path)
             runner.add_simulation(simulation)
+
+        for path in get_all_paths(arguments.lammps_entries):
+            if LAMMPSSimulation is None:
+                print("LAMMPS backend is not yet implemented")
+                continue
+            try:
+                simulation = LAMMPSSimulation.from_data_file(path)
+                runner.add_simulation(simulation)
+            except NotImplementedError as e:
+                print(f"LAMMPS simulation not yet implemented: {e}")
+            except Exception as e:
+                print(f"Error initializing LAMMPS simulation from {path}: {e}")
 
         if arguments.record_to_path is not None:
             stem = arguments.record_to_path
