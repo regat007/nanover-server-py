@@ -20,7 +20,8 @@ from nanover.websocket.discovery import DiscoveryClient
 from nanover.websocket.record import record_from_runner
 try:
     from nanover.lammps import LAMMPSSimulation
-except Exception:
+except Exception as e:
+    print(f"Could not import LAMMPS module: {e}")
     LAMMPSSimulation = None
 
 
@@ -162,11 +163,18 @@ def initialise_runner(arguments: argparse.Namespace):
 
         for path in get_all_paths(arguments.lammps_entries):
             if LAMMPSSimulation is None:
-                print("LAMMPS backend is not yet implemented")
+                print("LAMMPS backend is not yet implemented (LAMMPSSimulation is None)")
                 continue
             try:
-                simulation = LAMMPSSimulation.from_data_file(path)
+                ''' Skip for now - LAMMPS initialization from data file not yet implemented'''
+                #simulation = LAMMPSSimulation.from_data_file(path)
+                #runner.add_simulation(simulation)
+                ''' Smoke Test LAMMPS initialization '''
+                simulation = LAMMPSSimulation(input_script=path)
+                #simulation.step(1)
                 runner.add_simulation(simulation)
+                natoms = simulation._natoms
+                print(f"LAMMPS Simulation with {natoms} atoms initialized from {path}")
             except NotImplementedError as e:
                 print(f"LAMMPS simulation not yet implemented: {e}")
             except Exception as e:
