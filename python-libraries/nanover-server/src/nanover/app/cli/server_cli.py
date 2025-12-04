@@ -55,7 +55,7 @@ def handle_user_arguments(args=None) -> argparse.Namespace:
         nargs="+",
         default=[],
         metavar="PATH",
-        help="Simulation to run via OpenMM (XML format)",
+        help="Simulations to run via OpenMM (XML format)",
     )
 
     parser.add_argument(
@@ -65,7 +65,7 @@ def handle_user_arguments(args=None) -> argparse.Namespace:
         nargs="+",
         default=[],
         metavar="PATH",
-        help="Structure to load via MDanalysis",
+        help="Structures to load via MDanalysis",
     )
 
     parser.add_argument(
@@ -75,7 +75,7 @@ def handle_user_arguments(args=None) -> argparse.Namespace:
         nargs="+",
         default=[],
         metavar="PATH",
-        help="Recorded session to playback",
+        help="Recorded sessions to playback",
     )
 
     parser.add_argument(
@@ -148,8 +148,8 @@ def initialise_runner(arguments: argparse.Namespace):
         port=arguments.port,
         ssl=initialise_ssl(arguments),
     ) as runner:
-        for paths in arguments.recording_entries:
-            runner.add_simulation(PlaybackSimulation.from_path(path=paths[0]))
+        for path in get_all_paths(arguments.recording_entries):
+            runner.add_simulation(PlaybackSimulation.from_path(path=path))
 
         for path in get_all_paths(arguments.openmm_xml_entries):
             simulation = OpenMMSimulation.from_xml_path(path)
