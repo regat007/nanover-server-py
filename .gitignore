@@ -19,3 +19,6 @@ htmlcov
 *.DotSettings.user
 
 **/.ipynb_checkpoints/
+
+# LAMMPS runtime output
+log.lammps
